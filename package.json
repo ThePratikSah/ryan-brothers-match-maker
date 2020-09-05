@@ -1,0 +1,26 @@
+{
+  "name": "match-maker",
+  "version": "1.0.0",
+  "description": "A match making project for Md. Makbool",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "keywords": [],
+  "author": "Shashank Biplav",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShashankBiplav/ryan-brothers-match-maker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ShashankBiplav/ryan-brothers-match-maker/issues"
+  },
+  "homepage": "https://github.com/ShashankBiplav/ryan-brothers-match-maker#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "nodemon": "^2.0.4"
+  }
+}
