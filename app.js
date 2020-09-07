@@ -70,11 +70,11 @@ mongoose.connect(process.env.MONGODB_URI,{
     useFindAndModify: false
 })
     .then(()=>{
-        // console.log('Connection to DB');
+        console.log('Connection to DB');
         app.listen(port,
-            //  ()=>{
-            //     console.log(`listening on port${port}`);
-            // }
+             ()=>{
+                console.log(`listening on port${port}`);
+            }
         );
     }).catch(err=>{
     console.log(err);
