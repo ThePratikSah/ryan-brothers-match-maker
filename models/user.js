@@ -21,6 +21,10 @@ const userSchema = new Schema({
     resetTokenExpiryDate:{
         type: Date
     },
+    favourites:{
+        type:Schema.Types.ObjectID,
+        ref: 'User'
+    }
 });
 
 module.exports = mongoose.model('User', userSchema);
