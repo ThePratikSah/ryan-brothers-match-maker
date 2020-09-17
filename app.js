@@ -18,6 +18,8 @@ const port = process.env.PORT|| 3001;
 
 const app = express();
 
+const authRoutes = require('./routes/auth');
+
 const fileStorage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'images');
@@ -50,6 +52,8 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
 });
+
+app.use('/auth', authRoutes);
 
 app.use(helmet());
 
