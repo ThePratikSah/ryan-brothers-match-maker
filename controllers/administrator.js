@@ -4,7 +4,7 @@ const User = require('../models/user');
 
 exports.getAllUsers = async(req, res, next) => {
     const currentPage = req.query.page || 1;
-    const perPage = 2;
+    const perPage = 10;
     try{
         const totalUsers = await User.find().countDocuments();
         const users = await User.find().skip((currentPage - 1) * perPage).limit(perPage);

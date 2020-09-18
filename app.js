@@ -20,6 +20,10 @@ const app = express();
 
 const authRoutes = require('./routes/auth');
 
+const adminRoutes = require('./routes/administrator');
+
+const userRoutes = require('./routes/user');
+
 const fileStorage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'images');
@@ -54,6 +58,10 @@ app.use((req, res, next) => {
 });
 
 app.use('/auth', authRoutes);
+
+app.use('/administrator', adminRoutes);
+
+app.use('/user', userRoutes);
 
 app.use(helmet());
 
