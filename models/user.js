@@ -15,7 +15,7 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
-    profileImageUrl: {
+    profileImageUrl:{
         type: String,
     },
     isVerified:{
@@ -29,7 +29,7 @@ const userSchema = new Schema({
     isProfileComplete:{
         type: Boolean,
         default: false
-    }
+    },
     mobile:{
         type: Number,
         required: true
