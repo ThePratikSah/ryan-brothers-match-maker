@@ -17,7 +17,6 @@ const userSchema = new Schema({
     },
     age:{
         type: Number,
-        required: true
     },
     profileImageUrl:{
         type: String,
@@ -35,12 +34,10 @@ const userSchema = new Schema({
         default: false
     },
     mobile:{
-        type: Number,
-        required: true
+        type: Number
     },
     adhaar:{
-        type: Number,
-        required: true
+        type: Number
     },
     address:{
         type: String
@@ -50,7 +47,13 @@ const userSchema = new Schema({
     },
     gender:{
         type: String,
-        required: true
+    },
+    membership:{
+      type: String,
+      default: 'NONE'
+    },
+    membershipExpiryDate:{
+        type:Date
     },
     resetToken:{
         type: String
@@ -58,10 +61,10 @@ const userSchema = new Schema({
     resetTokenExpiryDate:{
         type: Date
     },
-    favourites:{
+    favourites:[{
         type:Schema.Types.ObjectID,
         ref: 'User'
-    }
+    }]
 },{
     timestamps: true
 });
