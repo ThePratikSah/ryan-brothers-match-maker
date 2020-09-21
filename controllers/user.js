@@ -1,12 +1,5 @@
 const User = require('../models/user');
 
-let http = require('http');
-let urlencode = require('urlencode');
-let msg=urlencode('hello js');
-let number='Mobile number';
-let username='<Registered email id>';
-let hash='<Your Hash key>';
-
 exports.getAllUsers = async(req, res, next) => {
     const currentPage = req.query.page || 1;
     const perPage = 10;
