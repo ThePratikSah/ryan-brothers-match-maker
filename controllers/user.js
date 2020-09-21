@@ -1,5 +1,12 @@
 const User = require('../models/user');
 
+let http = require('http');
+let urlencode = require('urlencode');
+let msg=urlencode('hello js');
+let number='Mobile number';
+let username='<Registered email id>';
+let hash='<Your Hash key>';
+
 exports.getAllUsers = async(req, res, next) => {
     const currentPage = req.query.page || 1;
     const perPage = 10;
@@ -28,7 +35,7 @@ exports.updateProfile = async (req, res, next) => {
     const address = req.body.address;
     const caste = req.body.caste;
     const gender = req.body.gender;
-    const mobile = req.body.mobile;
+    // const mobile = req.body.mobile;
     let profileImageUrl = req.body.image;
     if (req.file) {
         profileImageUrl = req.file.path;
@@ -51,7 +58,7 @@ exports.updateProfile = async (req, res, next) => {
         user.address = address;
         user.caste = caste;
         user.gender = gender;
-        user.mobile = mobile;
+        // user.mobile = mobile;
         user.profileImageUrl = profileImageUrl;
         const result = await user.save();
         res.status(201).json({
@@ -89,7 +96,7 @@ exports.getUser = async (req, res, next) => {
     }
 };
 
-exports.verifyAdhaar = async(req, res, next) => {
+exports.changeAdhaar = async(req, res, next) => {
     const userId = req.params.userId;
     const adhaar = req.body.adhaar;
     try{
@@ -115,6 +122,65 @@ exports.verifyAdhaar = async(req, res, next) => {
     }
 };
 
+//TODO: Send SMS to verify
+exports.changeMobile =async (req, res, next) => {
+    const userId = req.params.userId;
+    const mobile = req.body.mobile;
+    try{
+        const user = await User.findById(userId);
+        if (!user){
+            const error = new Error('User not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        user.mobile = mobile;
+        user.isMobileVerified = false;
+        const result = await user.save();
+        res.status(201).json({
+            message: 'Mobile number changed succesfully, verification pending',
+            result: result
+        });
+    }
+    catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+};
+
+exports.verifyMobile = async (req, res, next) => {
+    const userId = req.params.userId;
+    const mobileOtp = req.body.mobileOtp;
+    try{
+        const user = await User.findById(userId);
+        if (!user){
+            const error = new Error('User not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        if (user.mobileOtp !== mobileOtp){
+            const error = new Error('OTP verification error');
+            error.statusCode = 403;
+            throw error;
+        }
+        user.mobileOtp = mobileOtp;
+        user.isMobileVerified = true;
+        const result = user.save();
+        res.status(201).json({
+            message: 'Mobile number verified successfully',
+            result: result
+        });
+    }
+    catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+};
+
+//TODO: Apply payment gateway here for membership
 exports.upgradeMembership = async (req, res, next) => {
     const userId = req.params.userId;
     const appliedMembership = req.body.appliedMembership;

@@ -25,6 +25,14 @@ const userSchema = new Schema({
         type: Boolean,
         default: false
     },
+    isMobileVerified:{
+        type: Boolean,
+        default: false
+    },
+    mobileOtp:{
+        type:String,
+        default: null
+    },
     isAuthorized:{
         type: Boolean,
         default: false
