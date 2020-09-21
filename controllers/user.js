@@ -28,6 +28,7 @@ exports.updateProfile = async (req, res, next) => {
     const address = req.body.address;
     const caste = req.body.caste;
     const gender = req.body.gender;
+    const mobile = req.body.mobile;
     let profileImageUrl = req.body.image;
     if (req.file) {
         profileImageUrl = req.file.path;
@@ -50,6 +51,7 @@ exports.updateProfile = async (req, res, next) => {
         user.address = address;
         user.caste = caste;
         user.gender = gender;
+        user.mobile = mobile;
         user.profileImageUrl = profileImageUrl;
         const result = await user.save();
         res.status(201).json({
@@ -67,14 +69,98 @@ exports.updateProfile = async (req, res, next) => {
 
 exports.getUser = async (req, res, next) => {
     const userId = req.params.userId;
+    try{
+        const user = await User.findById(userId);
+        if (!user){
+            const error = new Error('User not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        res.status(200).json({
+            message: 'User fetched successfully',
+            user: user
+        });
+    }
+    catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
 };
 
-exports.verifyMobile = (req, res, next) => {
-
+exports.verifyAdhaar = async(req, res, next) => {
+    const userId = req.params.userId;
+    const adhaar = req.body.adhaar;
+    try{
+        const user = await User.findById(userId);
+        if (!user){
+            const error = new Error('User not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        user.adhaar = adhaar;
+        user.isVerified = false;
+        const result =await user.save();
+        res.status(201).json({
+            message: 'Adhaar updated. Verification pending',
+            result: result
+        });
+    }
+    catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
 };
 
-exports.upgradeMembership = (req, res, next) => {
-
+exports.upgradeMembership = async (req, res, next) => {
+    const userId = req.params.userId;
+    const appliedMembership = req.body.appliedMembership;
+    try{
+        const user = await User.findById(userId);
+        if (!user){
+            const error = new Error('User not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        if (appliedMembership === 'BRONZE'){
+            user.membership = appliedMembership;
+            const date = new Date();
+            date.setMonth(date.getMonth() + 1);
+            user.membershipExpiryDate = date;
+        }
+        if (appliedMembership === 'SILVER'){
+            user.membership = appliedMembership;
+            const date = new Date();
+            date.setMonth(date.getMonth() + 3);
+            user.membershipExpiryDate = date;
+        }
+        if (appliedMembership === 'GOLD'){
+            user.membership = appliedMembership;
+            const date = new Date();
+            date.setMonth(date.getMonth() + 6);
+            user.membershipExpiryDate = date;
+        }
+        if (appliedMembership === 'PLATINUM'){
+            user.membership = appliedMembership;
+            const date = new Date();
+            date.setMonth(date.getMonth() + 12);
+            user.membershipExpiryDate = date;
+        }
+        const result = await user.save();
+        res.status(200).json({
+            message : `Membership upgraded to ${appliedMembership}`,
+            result: result
+        });
+    }
+    catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
 };
 
 //helper function to delete image
