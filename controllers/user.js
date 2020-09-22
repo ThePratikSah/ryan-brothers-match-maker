@@ -1,9 +1,9 @@
 const User = require('../models/user');
 
-exports.getAllUsers = async(req, res, next) => {
+exports.getAllUsers = async (req, res, next) => {
     const currentPage = req.query.page || 1;
     const perPage = 10;
-    try{
+    try {
         const users = await User.find({}, 'name profileImageUrl age gender').skip((currentPage - 1) * perPage).limit(perPage);
         res.status(200).json({
             message: 'Users fetched successfully',
@@ -11,8 +11,27 @@ exports.getAllUsers = async(req, res, next) => {
                 users: users
             }
         });
+    } catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
     }
-    catch (err) {
+};
+
+exports.getAllUsersAfterLogin = async (req, res, next) => {
+    const currentPage = req.query.page || 1;
+    const perPage = 10;
+    try {
+        const users = await User.find({_id: {$ne: req.userId}}, 'name profileImageUrl age gender email adhaar address caste mobile')
+            .skip((currentPage - 1) * perPage).limit(perPage);
+        res.status(200).json({
+            message: 'Users fetched successfully',
+            data: {
+                users: users
+            }
+        });
+    } catch (err) {
         if (!err.statusCode) {
             err.statusCode = 500;
         }
@@ -21,9 +40,9 @@ exports.getAllUsers = async(req, res, next) => {
 };
 
 exports.updateProfile = async (req, res, next) => {
-    const userId = req.params.userId;
+    const userId = req.userId;
     const name = req.body.name;
-    const  email = req.body.email;
+    const email = req.body.email;
     const age = req.body.age;
     const address = req.body.address;
     const caste = req.body.caste;
@@ -38,9 +57,9 @@ exports.updateProfile = async (req, res, next) => {
         error.statusCode = 422;
         throw error;
     }
-    try{
+    try {
         const user = await User.findById(userId);
-        if (!user){
+        if (!user) {
             const error = new Error('User not found');
             error.statusCode = 404;
             throw error;
@@ -58,8 +77,7 @@ exports.updateProfile = async (req, res, next) => {
             message: 'User updated successfully',
             result: result
         });
-    }
-    catch (err) {
+    } catch (err) {
         if (!err.statusCode) {
             err.statusCode = 500;
         }
@@ -69,9 +87,9 @@ exports.updateProfile = async (req, res, next) => {
 
 exports.getUser = async (req, res, next) => {
     const userId = req.params.userId;
-    try{
+    try {
         const user = await User.findById(userId);
-        if (!user){
+        if (!user) {
             const error = new Error('User not found');
             error.statusCode = 404;
             throw error;
@@ -80,8 +98,7 @@ exports.getUser = async (req, res, next) => {
             message: 'User fetched successfully',
             user: user
         });
-    }
-    catch (err) {
+    } catch (err) {
         if (!err.statusCode) {
             err.statusCode = 500;
         }
@@ -89,25 +106,24 @@ exports.getUser = async (req, res, next) => {
     }
 };
 
-exports.changeAdhaar = async(req, res, next) => {
-    const userId = req.params.userId;
+exports.changeAdhaar = async (req, res, next) => {
+    const userId = req.userId;
     const adhaar = req.body.adhaar;
-    try{
+    try {
         const user = await User.findById(userId);
-        if (!user){
+        if (!user) {
             const error = new Error('User not found');
             error.statusCode = 404;
             throw error;
         }
         user.adhaar = adhaar;
         user.isVerified = false;
-        const result =await user.save();
+        const result = await user.save();
         res.status(201).json({
             message: 'Adhaar updated. Verification pending',
             result: result
         });
-    }
-    catch (err) {
+    } catch (err) {
         if (!err.statusCode) {
             err.statusCode = 500;
         }
@@ -116,12 +132,12 @@ exports.changeAdhaar = async(req, res, next) => {
 };
 
 //TODO: Send SMS to verify
-exports.changeMobile =async (req, res, next) => {
-    const userId = req.params.userId;
+exports.changeMobile = async (req, res, next) => {
+    const userId = req.userId;
     const mobile = req.body.mobile;
-    try{
+    try {
         const user = await User.findById(userId);
-        if (!user){
+        if (!user) {
             const error = new Error('User not found');
             error.statusCode = 404;
             throw error;
@@ -133,8 +149,7 @@ exports.changeMobile =async (req, res, next) => {
             message: 'Mobile number changed succesfully, verification pending',
             result: result
         });
-    }
-    catch (err) {
+    } catch (err) {
         if (!err.statusCode) {
             err.statusCode = 500;
         }
@@ -145,14 +160,14 @@ exports.changeMobile =async (req, res, next) => {
 exports.verifyMobile = async (req, res, next) => {
     const userId = req.params.userId;
     const mobileOtp = req.body.mobileOtp;
-    try{
+    try {
         const user = await User.findById(userId);
-        if (!user){
+        if (!user) {
             const error = new Error('User not found');
             error.statusCode = 404;
             throw error;
         }
-        if (user.mobileOtp !== mobileOtp){
+        if (user.mobileOtp !== mobileOtp) {
             const error = new Error('OTP verification error');
             error.statusCode = 403;
             throw error;
@@ -164,8 +179,55 @@ exports.verifyMobile = async (req, res, next) => {
             message: 'Mobile number verified successfully',
             result: result
         });
+    } catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
     }
-    catch (err) {
+};
+
+exports.markUserFavourite = async (req, res, next) => {
+    const userId = req.params.userId;
+    try {
+        const favUser = await User.findById(userId);
+        if (!user) {
+            const error = new Error('User not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        const user = await User.find(req.userId);
+        user.favourites.push(favUser);
+        await user.save();
+        res.status(200).json({
+            message: 'User as Favourite',
+            favUserId: favUser._id
+        });
+    } catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+};
+
+exports.removeFavourite = async (req, res, next) => {
+    const userId = req.params.userId;
+    try {
+        const favUser = await User.findById(userId);
+        if (!user) {
+            const error = new Error('User not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        const user = await User.find(req.userId);
+        user.favourites.pull(favUser);
+        await user.save();
+        res.status(200).json({
+            message: 'Removed from Favourite',
+            favUserId: favUser._id
+        });
+    } catch (err) {
         if (!err.statusCode) {
             err.statusCode = 500;
         }
@@ -175,34 +237,34 @@ exports.verifyMobile = async (req, res, next) => {
 
 //TODO: Apply payment gateway here for membership
 exports.upgradeMembership = async (req, res, next) => {
-    const userId = req.params.userId;
+    const userId = req.userId;
     const appliedMembership = req.body.appliedMembership;
-    try{
+    try {
         const user = await User.findById(userId);
-        if (!user){
+        if (!user) {
             const error = new Error('User not found');
             error.statusCode = 404;
             throw error;
         }
-        if (appliedMembership === 'BRONZE'){
+        if (appliedMembership === 'BRONZE') {
             user.membership = appliedMembership;
             const date = new Date();
             date.setMonth(date.getMonth() + 1);
             user.membershipExpiryDate = date;
         }
-        if (appliedMembership === 'SILVER'){
+        if (appliedMembership === 'SILVER') {
             user.membership = appliedMembership;
             const date = new Date();
             date.setMonth(date.getMonth() + 3);
             user.membershipExpiryDate = date;
         }
-        if (appliedMembership === 'GOLD'){
+        if (appliedMembership === 'GOLD') {
             user.membership = appliedMembership;
             const date = new Date();
             date.setMonth(date.getMonth() + 6);
             user.membershipExpiryDate = date;
         }
-        if (appliedMembership === 'PLATINUM'){
+        if (appliedMembership === 'PLATINUM') {
             user.membership = appliedMembership;
             const date = new Date();
             date.setMonth(date.getMonth() + 12);
@@ -210,11 +272,10 @@ exports.upgradeMembership = async (req, res, next) => {
         }
         const result = await user.save();
         res.status(200).json({
-            message : `Membership upgraded to ${appliedMembership}`,
+            message: `Membership upgraded to ${appliedMembership}`,
             result: result
         });
-    }
-    catch (err) {
+    } catch (err) {
         if (!err.statusCode) {
             err.statusCode = 500;
         }
