@@ -1,67 +1,85 @@
-const express = require('express');
+const express = require("express");
 
-const path = require('path');
+const path = require("path");
 
-const bodyParser = require('body-parser');
+const multer = require("multer");
 
-const mongoose = require('mongoose');
+const helmet = require("helmet");
 
-const multer = require('multer');
+const compression = require("compression");
 
-const helmet = require('helmet');
+// requiring dotenv for fetching api details
+require("dotenv").config();
 
-const compression = require('compression');
+// defining a dynamic port number/3000
+const port = process.env.PORT || 3000;
 
-require('dotenv').config();
-
-const port = process.env.PORT|| 3001;
+// database connection pool
+const db = require("./util/database");
 
 const app = express();
 
-const authRoutes = require('./routes/auth');
+// importing all the routes
+const authRoutes = require("./routes/auth");
 
-const adminRoutes = require('./routes/administrator');
+const adminRoutes = require("./routes/administrator");
 
-const userRoutes = require('./routes/user');
+const userRoutes = require("./routes/user");
 
+// Multer file storage config
 const fileStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'images');
-    },
-    filename: (req, file, cb) => {
-        cb(null, new Date().toISOString() + '-' + file.originalname);
-    }
+  destination: (req, file, cb) => {
+    cb(null, "images");
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + "-" + file.originalname);
+  },
 });
 
+// multer file filter
 const fileFilter = (req, file, cb) => {
-    if (file.mimetype === 'image/jpg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpeg') {
-        cb(null, true);
-    } else {
-        cb(null, false);
-    }
+  if (
+    file.mimetype === "image/jpg" ||
+    file.mimetype === "image/png" ||
+    file.mimetype === "image/jpeg"
+  ) {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
 };
 
-app.use(bodyParser.json());
+// initializing parser from express
+app.use(express.json());
 
-app.use(multer({
+// multer middleware
+app.use(
+  multer({
     storage: fileStorage,
-    fileFilter: fileFilter
-}).single('image'));
+    fileFilter: fileFilter,
+  }).single("image")
+);
 
-app.use('/images', express.static(path.join(__dirname, 'images')));
+// defining static path of images folder
+app.use("/images", express.static(path.join(__dirname, "images")));
 
+// cors error middleware
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    next();
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, PATCH, DELETE"
+  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
 });
 
-app.use('/auth', authRoutes);
+// using the defined routes
+app.use("/auth", authRoutes);
 
-app.use('/administrator', adminRoutes);
+app.use("/administrator", adminRoutes);
 
-app.use('/user', userRoutes);
+app.use("/user", userRoutes);
 
 app.use(helmet());
 
@@ -69,27 +87,16 @@ app.use(compression());
 
 //central error handling middleware
 app.use((error, req, res, next) => {
-    const status = error.statusCode || 500;
-    const message = error.message;
-    const data = error.data;
-    res.status(status).json({
-        message: message,
-        data: data
-    });
+  const status = error.statusCode || 500;
+  const message = error.message;
+  const data = error.data;
+  res.status(status).json({
+    message: message,
+    data: data,
+  });
 });
 
-mongoose.connect(process.env.MONGODB_URI,{
-    useUnifiedTopology: true,
-    useNewUrlParser: true,
-    useFindAndModify: false
-})
-    .then(()=>{
-        console.log('Connection to DB');
-        app.listen(port,
-             ()=>{
-                console.log(`listening on port${port}`);
-            }
-        );
-    }).catch(err=>{
-    console.log(err);
+// listining http
+app.listen(port, () => {
+  console.log("Running");
 });

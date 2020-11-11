@@ -1,8 +1,8 @@
 const Sequelize = require("sequelize");
 
-const sequelize = require("../util/database");
+const sequelize = require("../../util/database");
 
-const Administrator = sequelize.define("administrator", {
+const User = sequelize.define("user", {
   id: {
     type: Sequelize.INTEGER,
     autoIncrement: true,
@@ -21,12 +21,6 @@ const Administrator = sequelize.define("administrator", {
     type: Sequelize.STRING,
     allowNull: false,
   },
-  resetToken: {
-    type: Sequelize.STRING,
-  },
-  resetTokenExpiryDate: {
-    type: Sequelize.DATE,
-  },
 });
 
-module.exports = Administrator;
+module.exports = User;
